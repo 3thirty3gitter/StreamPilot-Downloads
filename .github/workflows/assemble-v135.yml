@@ -1,0 +1,30 @@
+name: Assemble published APK v135
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.upload/v135/**'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble and verify StreamPilot v135
+        shell: bash
+        run: |
+          cat .upload/v135/part-* > StreamPilot-v135.apk
+          echo "c88396cc1bdf9d2866f62711ecd3003fe62f7b6e5a4ef4ad9630f7dedc418e73  StreamPilot-v135.apk" | sha256sum -c -
+      - name: Publish APK
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -r .upload/v135
+          git add StreamPilot-v135.apk
+          git commit -m "Publish StreamPilot v135 APK"
+          git push
