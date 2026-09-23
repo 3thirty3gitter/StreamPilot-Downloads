@@ -1,0 +1,35 @@
+name: Publish StreamPilot v505 APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v505.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_URL: "https://sdmntprwestus3.oaiusercontent.com/files/00000000-5b88-81fd-a96c-97eb7ce5c1cb/raw?se=2026-09-23T01%3A50%3A25Z&sp=r&sv=2026-02-06&sr=b&scid=83c3902d-45fc-4287-a808-3c3057100db1&skoid=5e713cdb-766b-475e-a3ca-8adb6cf99aa0&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-22T23%3A06%3A14Z&ske=2026-09-23T23%3A06%3A14Z&sks=b&skv=2026-02-06&sig=hy20Epyc8yHndc9CFqJwXQ5A3bTe2C0svKkHlmK/iPc%3D"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download, extract, and verify APK
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 --silent --show-error "$ARTIFACT_URL" --output StreamPilot-v505.zip
+          unzip -q StreamPilot-v505.zip StreamPilot-v505.apk
+          rm StreamPilot-v505.zip
+          echo "112a6737b8c857ca7aafcc3d979ac2f203caf465afacd0413c2cce779b2e7a9f  StreamPilot-v505.apk" | sha256sum -c -
+      - name: Publish APK
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add StreamPilot-v505.apk
+          git rm .github/workflows/publish-v505.yml
+          git commit -m "Publish StreamPilot v505 APK"
+          git push
